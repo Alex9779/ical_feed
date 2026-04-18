@@ -1,0 +1,193 @@
+{
+ "actions": [],
+ "autoname": "ICAL-FEED-.####",
+ "creation": "2026-04-18 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "enabled",
+  "token",
+  "column_break_a",
+  "doctype_name",
+  "section_datetime",
+  "field_start",
+  "field_end",
+  "column_break_b",
+  "field_summary",
+  "field_summary_subfield",
+  "section_details",
+  "field_description",
+  "field_description_subfield",
+  "column_break_c",
+  "field_location",
+  "field_location_subfield",
+  "section_filters",
+  "filters_json"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Feed Title",
+   "reqd": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Enabled"
+  },
+  {
+   "fieldname": "token",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Token",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "doctype_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "DocType",
+   "options": "DocType",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_datetime",
+   "fieldtype": "Section Break",
+   "label": "Date & Time Fields"
+  },
+  {
+   "description": "Datetime field for event start",
+   "fieldname": "field_start",
+   "fieldtype": "Select",
+   "label": "Start Field",
+   "options": "",
+   "reqd": 1
+  },
+  {
+   "description": "Datetime field for event end",
+   "fieldname": "field_end",
+   "fieldtype": "Select",
+   "label": "End Field",
+   "options": "",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_b",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Field used as event title in calendar (SUMMARY). Uses document name if empty.",
+   "fieldname": "field_summary",
+   "fieldtype": "Select",
+   "label": "Summary Field",
+   "options": ""
+  },
+  {
+   "description": "If Summary Field is a Link, pick which field from the linked doctype to display.",
+   "fieldname": "field_summary_subfield",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Summary \u2192 Linked Field",
+   "options": ""
+  },
+  {
+   "fieldname": "section_details",
+   "fieldtype": "Section Break",
+   "label": "Event Details"
+  },
+  {
+   "description": "Field for event body text shown in calendar detail (DESCRIPTION)",
+   "fieldname": "field_description",
+   "fieldtype": "Select",
+   "label": "Description Field",
+   "options": ""
+  },
+  {
+   "description": "If Description Field is a Link, pick which field from the linked doctype to display.",
+   "fieldname": "field_description_subfield",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Description \u2192 Linked Field",
+   "options": ""
+  },
+  {
+   "fieldname": "column_break_c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Field for event location shown in calendar (LOCATION)",
+   "fieldname": "field_location",
+   "fieldtype": "Select",
+   "label": "Location Field",
+   "options": ""
+  },
+  {
+   "description": "If Location Field is a Link, pick which field from the linked doctype to display. Leave blank to auto-format (Address fields include map coordinates).",
+   "fieldname": "field_location_subfield",
+   "fieldtype": "Select",
+   "hidden": 1,
+   "label": "Location \u2192 Linked Field",
+   "options": ""
+  },
+  {
+   "fieldname": "section_filters",
+   "fieldtype": "Section Break",
+   "label": "Filters"
+  },
+  {
+   "description": "Filter which records are included. Edit via the Filters menu above.",
+   "fieldname": "filters_json",
+   "fieldtype": "Code",
+   "label": "Filters",
+   "options": "JSON",
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-04-18 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "iCal Feed",
+ "name": "iCal Feed",
+ "naming_rule": "Expression (old-style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}

@@ -1,0 +1,17 @@
+[project]
+name = "ical_feed"
+authors = [{ name = "ALITECS Alexander Leisentritt", email = "info@alitecs.de" }]
+description = "ICS calendar feed for any Frappe doctype with a calendar view"
+readme = "README.md"
+dynamic = ["version"]
+requires-python = ">=3.10"
+dependencies = [
+    "icalendar",
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = ">=15.0.0,<16.0.0"
