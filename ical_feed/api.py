@@ -147,14 +147,14 @@ def get_feed(token):
 		raw_summary = r.get(summary_field) or r.get("name") or ""
 		summary = _resolve_subfield_value(
 			raw_summary, summary_field, feed.field_summary_subfield, field_link_targets
-		) if feed.field_summary_subfield else str(raw_summary)
+		) if feed.field_summary_subfield else _html_to_text(str(raw_summary))
 
 		event = Event()
 		event.add("uid", f"{feed.name}-{r.name}@frappe-ical")
 		event.add("summary", summary)
 		event.add("dtstart", start_dt)
 		event.add("dtend", end_dt)
-		event.add("url", f"{site_url}/app/{frappe.scrub(feed.doctype_name)}/{r.name}")
+		event.add("url", f"{site_url}/app/{frappe.scrub(feed.doctype_name).replace('_', '-')}/{r.name}")
 
 		if feed.field_description:
 			desc_raw = r.get(feed.field_description)
@@ -165,7 +165,7 @@ def get_feed(token):
 						feed.field_description_subfield, field_link_targets
 					)
 				else:
-					desc = str(desc_raw)
+					desc = _html_to_text(str(desc_raw))
 				if desc:
 					event.add("description", desc)
 
@@ -226,6 +226,44 @@ def regenerate_token(feed_name):
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+def _html_to_text(value):
+	"""Convert an HTML string to plain text suitable for iCal properties.
+
+	Block-level tags are converted to newlines so structure is preserved.
+	HTML entities are decoded. Remaining tags are stripped.
+	Multiple consecutive blank lines are collapsed to a single blank line.
+	"""
+	if not value:
+		return ""
+	import re
+	try:
+		from html.parser import HTMLParser
+		class _Parser(HTMLParser):
+			BLOCK = {"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "hr"}
+			def __init__(self):
+				super().__init__(convert_charrefs=True)
+				self.parts = []
+			def handle_starttag(self, tag, attrs):
+				if tag in self.BLOCK:
+					self.parts.append("\n")
+			def handle_endtag(self, tag):
+				if tag in self.BLOCK:
+					self.parts.append("\n")
+			def handle_data(self, data):
+				self.parts.append(data)
+		p = _Parser()
+		p.feed(value)
+		text = "".join(p.parts)
+		# Collapse 3+ consecutive newlines to 2, strip leading/trailing whitespace per line
+		lines = [ln.rstrip() for ln in text.splitlines()]
+		text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
+		return text
+	except Exception:
+		# Fallback: just strip tags
+		clean = re.sub(r"<[^>]+>", " ", value)
+		return re.sub(r"\s+", " ", clean).strip()
+
+
 def _to_aware_datetime(val, tz):
 	"""Convert a datetime value (string or object) to a timezone-aware datetime."""
 	if not val:
@@ -261,11 +299,7 @@ def _resolve_subfield_value(link_value, fieldname, subfield, field_link_targets)
 		val = frappe.db.get_value(linked_doctype, link_value, subfield)
 		if val is None:
 			return link_value
-		text = str(val)
-		import re
-		text = re.sub(r"<[^>]+>", " ", text)
-		text = re.sub(r"\s+", " ", text).strip()
-		return text or link_value
+		return _html_to_text(str(val)) or link_value
 	except Exception:
 		return link_value
 
@@ -307,9 +341,5 @@ def _resolve_location(value, fieldname, field_link_targets):
 		except Exception:
 			return {"text": value, "lat": None, "lng": None}
 
-	# Strip HTML tags for other text/small-text fields so the value is readable
-	# in calendar apps (e.g. the address_details HTML field).
-	import re
-	clean = re.sub(r"<[^>]+>", " ", value)
-	clean = re.sub(r"\s+", " ", clean).strip()
-	return {"text": clean, "lat": None, "lng": None}
+	# Convert HTML to plain text for other field types.
+	return {"text": _html_to_text(value), "lat": None, "lng": None}
