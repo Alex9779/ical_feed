@@ -1,0 +1,171 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ical_feed\n"
+"POT-Creation-Date: 2026-04-19 00:00+0000\n"
+"PO-Revision-Date: 2026-04-19 00:00+0000\n"
+"Language-Team: German\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: de_DE\n"
+
+msgid "iCal Feed"
+msgstr "iCal-Feed"
+
+msgid "Feed Title"
+msgstr "Feed-Titel"
+
+msgid "Enabled"
+msgstr "Aktiv"
+
+msgid "Token"
+msgstr "Token"
+
+msgid "DocType"
+msgstr "DocType"
+
+msgid "Date & Time Fields"
+msgstr "Datums- und Zeitfelder"
+
+msgid "Start Field"
+msgstr "Startfeld"
+
+msgid "End Field"
+msgstr "Endfeld"
+
+msgid "Summary Field"
+msgstr "Zusammenfassungsfeld"
+
+msgid "Summary \u2192 Linked Field"
+msgstr "Zusammenfassung \u2192 Verknüpftes Feld"
+
+msgid "Event Details"
+msgstr "Ereignisdetails"
+
+msgid "Description Field"
+msgstr "Beschreibungsfeld"
+
+msgid "Description \u2192 Linked Field"
+msgstr "Beschreibung \u2192 Verknüpftes Feld"
+
+msgid "Location Field"
+msgstr "Ortsfeld"
+
+msgid "Location \u2192 Linked Field"
+msgstr "Ort \u2192 Verknüpftes Feld"
+
+msgid "Filters"
+msgstr "Filter"
+
+msgid "Datetime field for event start"
+msgstr "Datums-/Zeitfeld für den Ereignisstart"
+
+msgid "Datetime field for event end"
+msgstr "Datums-/Zeitfeld für das Ereignisende"
+
+msgid "Field used as event title in calendar (SUMMARY). Uses document name if empty."
+msgstr "Feld, das als Ereignistitel im Kalender verwendet wird (SUMMARY). Verwendet den Dokumentnamen, wenn leer."
+
+msgid "If Summary Field is a Link, pick which field from the linked doctype to display."
+msgstr "Wenn das Zusammenfassungsfeld ein Link ist, das Feld aus dem verknüpften DocType auswählen, das angezeigt werden soll."
+
+msgid "Field for event body text shown in calendar detail (DESCRIPTION)"
+msgstr "Feld für den Ereignistext in der Kalenderdetailansicht (DESCRIPTION)"
+
+msgid "If Description Field is a Link, pick which field from the linked doctype to display."
+msgstr "Wenn das Beschreibungsfeld ein Link ist, das Feld aus dem verknüpften DocType auswählen, das angezeigt werden soll."
+
+msgid "Field for event location shown in calendar (LOCATION)"
+msgstr "Feld für den Ereignisort im Kalender (LOCATION)"
+
+msgid "If Location Field is a Link, pick which field from the linked doctype to display. Leave blank to auto-format (Address fields include map coordinates)."
+msgstr "Wenn das Ortsfeld ein Link ist, das Feld aus dem verknüpften DocType auswählen, das angezeigt werden soll. Leer lassen, um die automatische Formatierung zu verwenden (Adressfelder enthalten Kartenkoordinaten)."
+
+msgid "Filter which records are included. Edit via the Filters menu above."
+msgstr "Auswählen, welche Datensätze enthalten sind. Über das Menü \"Filter\" oben bearbeiten."
+
+msgid "Subscribe"
+msgstr "Abonnieren"
+
+msgid "Copy HTTPS URL"
+msgstr "HTTPS-URL kopieren"
+
+msgid "HTTPS URL copied to clipboard!"
+msgstr "HTTPS-URL in die Zwischenablage kopiert!"
+
+msgid "Copy webcal:// URL"
+msgstr "webcal://-URL kopieren"
+
+msgid "webcal:// URL copied to clipboard!"
+msgstr "webcal://-URL in die Zwischenablage kopiert!"
+
+msgid "Subscribe in Calendar App"
+msgstr "In Kalender-App abonnieren"
+
+msgid "Actions"
+msgstr "Aktionen"
+
+msgid "Regenerate Token"
+msgstr "Token neu generieren"
+
+msgid "Regenerating will invalidate the existing subscription URL. Continue?"
+msgstr "Das Neu-Generieren macht die bestehende Abonnement-URL ungültig. Fortfahren?"
+
+msgid "Token regenerated"
+msgstr "Token neu generiert"
+
+msgid "Preview Record Count"
+msgstr "Anzahl Datensätze anzeigen"
+
+msgid "Filters contain invalid JSON"
+msgstr "Filter enthalten ungültiges JSON"
+
+msgid "Feed would include {0} record(s)"
+msgstr "Feed würde {0} Datensatz/Datensätze enthalten"
+
+msgid "Edit Filters"
+msgstr "Filter bearbeiten"
+
+msgid "Please select a DocType first"
+msgstr "Bitte zuerst einen DocType auswählen"
+
+msgid "Edit Filters for {0}"
+msgstr "Filter für {0} bearbeiten"
+
+msgid "Apply"
+msgstr "Übernehmen"
+
+msgid "From linked {0} record"
+msgstr "Aus verknüpftem {0}-Datensatz"
+
+msgid "Not permitted"
+msgstr "Keine Berechtigung"
+
+msgid "Invalid token"
+msgstr "Ungültiges Token"
+
+msgid "Feed not found or disabled"
+msgstr "Feed nicht gefunden oder deaktiviert"
+
+msgid "DocType not found"
+msgstr "DocType nicht gefunden"
+
+msgid "Invalid field: {0}"
+msgstr "Ungültiges Feld: {0}"
+
+msgid "Invalid subfield: {0}"
+msgstr "Ungültiges Unterfeld: {0}"
+
+msgid "icalendar package not installed. Run: pip install icalendar"
+msgstr "icalendar-Paket nicht installiert. Ausführen: pip install icalendar"
+
+msgid "pytz package not installed. Run: pip install pytz"
+msgstr "pytz-Paket nicht installiert. Ausführen: pip install pytz"
+
+msgid "Filters must be a JSON array"
+msgstr "Filter müssen ein JSON-Array sein"
+
+msgid "Filters contain invalid JSON: {0}"
+msgstr "Filter enthalten ungültiges JSON: {0}"

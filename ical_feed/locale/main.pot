@@ -1,0 +1,229 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ical_feed\n"
+"POT-Creation-Date: 2026-04-19 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.16.0\n"
+
+#. DocType name
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.json
+msgid "iCal Feed"
+msgstr ""
+
+#. DocType field labels
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.json
+msgid "Feed Title"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Token"
+msgstr ""
+
+msgid "DocType"
+msgstr ""
+
+msgid "Date & Time Fields"
+msgstr ""
+
+msgid "Start Field"
+msgstr ""
+
+msgid "End Field"
+msgstr ""
+
+msgid "Summary Field"
+msgstr ""
+
+msgid "Summary \u2192 Linked Field"
+msgstr ""
+
+msgid "Event Details"
+msgstr ""
+
+msgid "Description Field"
+msgstr ""
+
+msgid "Description \u2192 Linked Field"
+msgstr ""
+
+msgid "Location Field"
+msgstr ""
+
+msgid "Location \u2192 Linked Field"
+msgstr ""
+
+msgid "Filters"
+msgstr ""
+
+#. DocType field descriptions
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.json
+msgid "Datetime field for event start"
+msgstr ""
+
+msgid "Datetime field for event end"
+msgstr ""
+
+msgid "Field used as event title in calendar (SUMMARY). Uses document name if empty."
+msgstr ""
+
+msgid "If Summary Field is a Link, pick which field from the linked doctype to display."
+msgstr ""
+
+msgid "Field for event body text shown in calendar detail (DESCRIPTION)"
+msgstr ""
+
+msgid "If Description Field is a Link, pick which field from the linked doctype to display."
+msgstr ""
+
+msgid "Field for event location shown in calendar (LOCATION)"
+msgstr ""
+
+msgid "If Location Field is a Link, pick which field from the linked doctype to display. Leave blank to auto-format (Address fields include map coordinates)."
+msgstr ""
+
+msgid "Filter which records are included. Edit via the Filters menu above."
+msgstr ""
+
+#. Button group label (Subscribe drop-down)
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Subscribe"
+msgstr ""
+
+#. Button: copy HTTPS subscription URL to clipboard
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Copy HTTPS URL"
+msgstr ""
+
+#. Alert after copying HTTPS URL
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "HTTPS URL copied to clipboard!"
+msgstr ""
+
+#. Button: copy webcal:// subscription URL to clipboard
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Copy webcal:// URL"
+msgstr ""
+
+#. Alert after copying webcal URL
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "webcal:// URL copied to clipboard!"
+msgstr ""
+
+#. Button: open webcal URL in the default calendar app
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Subscribe in Calendar App"
+msgstr ""
+
+#. Button group label (Actions drop-down)
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Actions"
+msgstr ""
+
+#. Button: regenerate the feed token
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Regenerate Token"
+msgstr ""
+
+#. Confirmation dialog before regenerating the token
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Regenerating will invalidate the existing subscription URL. Continue?"
+msgstr ""
+
+#. Alert after token is regenerated
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Token regenerated"
+msgstr ""
+
+#. Button group label (Filters drop-down)
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Preview Record Count"
+msgstr ""
+
+#. Alert when filters_json is not valid JSON
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Filters contain invalid JSON"
+msgstr ""
+
+#. Msgprint showing how many records the feed currently covers; {0} = count
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Feed would include {0} record(s)"
+msgstr ""
+
+#. Button: open the filter editor dialog
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Edit Filters"
+msgstr ""
+
+#. Msgprint when Edit Filters is clicked before a DocType is selected
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Please select a DocType first"
+msgstr ""
+
+#. Title of the Edit Filters dialog; {0} = DocType name
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Edit Filters for {0}"
+msgstr ""
+
+#. Primary action button label in the Edit Filters dialog
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "Apply"
+msgstr ""
+
+#. Subfield selector description; {0} = linked DocType name
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.js
+msgid "From linked {0} record"
+msgstr ""
+
+#. Permission error in token regeneration
+#: ical_feed/api.py
+msgid "Not permitted"
+msgstr ""
+
+#. Validation error: token is missing or invalid
+#: ical_feed/api.py
+msgid "Invalid token"
+msgstr ""
+
+#. Error when no enabled feed matches the token
+#: ical_feed/api.py
+msgid "Feed not found or disabled"
+msgstr ""
+
+#. Error when the configured DocType no longer exists
+#: ical_feed/api.py
+msgid "DocType not found"
+msgstr ""
+
+#. Validation error; {0} = fieldname
+#: ical_feed/api.py
+msgid "Invalid field: {0}"
+msgstr ""
+
+#. Validation error; {0} = subfield name
+#: ical_feed/api.py
+msgid "Invalid subfield: {0}"
+msgstr ""
+
+#. Error when the icalendar Python package is missing
+#: ical_feed/api.py
+msgid "icalendar package not installed. Run: pip install icalendar"
+msgstr ""
+
+#. Error when the pytz Python package is missing
+#: ical_feed/api.py
+msgid "pytz package not installed. Run: pip install pytz"
+msgstr ""
+
+#. Validation error in ical_feed.py: filters_json is not a JSON array
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.py
+msgid "Filters must be a JSON array"
+msgstr ""
+
+#. Validation error in ical_feed.py: filters_json is not valid JSON; {0} = error detail
+#: ical_feed/ical_feed/doctype/ical_feed/ical_feed.py
+msgid "Filters contain invalid JSON: {0}"
+msgstr ""
