@@ -3,9 +3,35 @@
 
 import datetime
 import json
+import re
+from html.parser import HTMLParser
 
 import frappe
 from frappe import _
+
+
+# ---------------------------------------------------------------------------
+# HTML-to-text parser — defined at module level so the class is not
+# re-created on every call to _html_to_text.
+# ---------------------------------------------------------------------------
+
+class _HtmlParser(HTMLParser):
+	_BLOCK = frozenset({"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "hr"})
+
+	def __init__(self):
+		super().__init__(convert_charrefs=True)
+		self.parts: list[str] = []
+
+	def handle_starttag(self, tag, attrs):
+		if tag in self._BLOCK:
+			self.parts.append("\n")
+
+	def handle_endtag(self, tag):
+		if tag in self._BLOCK:
+			self.parts.append("\n")
+
+	def handle_data(self, data):
+		self.parts.append(data)
 
 
 # ---------------------------------------------------------------------------
@@ -86,11 +112,10 @@ def get_feed(token):
 			filters = []
 
 	# --- Fetch records -------------------------------------------------------
-	fetch_fields = list({feed.field_start, feed.field_end, "name"})
-	for f in (feed.field_summary, feed.field_description, feed.field_location):
-		if f:
-			fetch_fields.append(f)
-	fetch_fields = list(set(fetch_fields))
+	fetch_fields = list(
+		{"name", feed.field_start, feed.field_end}
+		| {f for f in (feed.field_summary, feed.field_description, feed.field_location) if f}
+	)
 
 	records = frappe.get_list(
 		feed.doctype_name,
@@ -102,7 +127,7 @@ def get_feed(token):
 
 	# --- Build ICS -----------------------------------------------------------
 	try:
-		from icalendar import Calendar, Event
+		from icalendar import Calendar, Event, vGeo, vText as _vText
 	except ImportError:
 		frappe.throw(_("icalendar package not installed. Run: pip install icalendar"))
 
@@ -117,6 +142,64 @@ def get_feed(token):
 	except Exception:
 		tz = pytz.UTC
 
+	# --- Pre-build subfield caches (batch DB lookups instead of per-record) --
+	# One query per unique (parent_field, subfield) pair replaces N individual
+	# frappe.db.get_value calls inside the event loop.
+	subfield_cache: dict[tuple[str, str], dict[str, str]] = {}
+	for _pf, _sf in (
+		(feed.field_summary, feed.field_summary_subfield),
+		(feed.field_description, feed.field_description_subfield),
+		(feed.field_location, feed.field_location_subfield),
+	):
+		if not _pf or not _sf or (_pf, _sf) in subfield_cache:
+			continue
+		_linked_dt = field_link_targets.get(_pf, "")
+		if not _linked_dt:
+			continue
+		_link_vals = list({str(r.get(_pf) or "") for r in records if r.get(_pf)})
+		if not _link_vals:
+			subfield_cache[(_pf, _sf)] = {}
+			continue
+		try:
+			_rows = frappe.get_all(
+				_linked_dt,
+				filters=[["name", "in", _link_vals]],
+				fields=["name", _sf],
+				ignore_permissions=True,
+			)
+			subfield_cache[(_pf, _sf)] = {
+				str(row.name): _html_to_text(str(row.get(_sf) or ""))
+				for row in _rows
+			}
+		except Exception:
+			subfield_cache[(_pf, _sf)] = {}
+
+	# --- Pre-build Address location cache ------------------------------------
+	# Batch-fetch all Address records referenced by the location field so the
+	# event loop does a dict lookup instead of a DB query per record.
+	address_cache: dict[str, dict] = {}
+	if feed.field_location and not feed.field_location_subfield:
+		if field_link_targets.get(feed.field_location) == "Address":
+			_loc_keys = list({str(r.get(feed.field_location) or "") for r in records if r.get(feed.field_location)})
+			if _loc_keys:
+				try:
+					_addr_rows = frappe.get_all(
+						"Address",
+						filters=[["name", "in", _loc_keys]],
+						fields=["name", "address_line1", "address_line2", "city", "state", "pincode", "country", "latitude", "longitude"],
+						ignore_permissions=True,
+					)
+					for _addr in _addr_rows:
+						_parts = [_addr.address_line1, _addr.address_line2, _addr.city, _addr.state, _addr.pincode, _addr.country]
+						_text = ", ".join(p.strip() for p in _parts if p and str(p).strip())
+						address_cache[str(_addr.name)] = {
+							"text": _text or str(_addr.name),
+							"lat": float(_addr.latitude) if _addr.get("latitude") else None,
+							"lng": float(_addr.longitude) if _addr.get("longitude") else None,
+						}
+				except Exception:
+					pass
+
 	cal = Calendar()
 	cal.add("prodid", f"-//Frappe iCal Feed//{feed.doctype_name}//EN")
 	cal.add("version", "2.0")
@@ -128,6 +211,7 @@ def get_feed(token):
 	cal.add("REFRESH-INTERVAL;VALUE=DURATION", "PT1H")
 
 	site_url = frappe.utils.get_url()
+	dt_slug = frappe.scrub(feed.doctype_name).replace("_", "-")
 
 	for r in records:
 		start_val = r.get(feed.field_start)
@@ -144,56 +228,53 @@ def get_feed(token):
 			end_dt = start_dt + datetime.timedelta(hours=1)
 
 		summary_field = feed.field_summary or "name"
-		raw_summary = r.get(summary_field) or r.get("name") or ""
-		summary = _resolve_subfield_value(
-			raw_summary, summary_field, feed.field_summary_subfield, field_link_targets
-		) if feed.field_summary_subfield else _html_to_text(str(raw_summary))
+		raw_summary = str(r.get(summary_field) or r.get("name") or "")
+		if feed.field_summary_subfield:
+			summary = subfield_cache.get((summary_field, feed.field_summary_subfield), {}).get(raw_summary, raw_summary)
+		else:
+			summary = _html_to_text(raw_summary)
 
 		event = Event()
 		event.add("uid", f"{feed.name}-{r.name}@frappe-ical")
 		event.add("summary", summary)
 		event.add("dtstart", start_dt)
 		event.add("dtend", end_dt)
-		event.add("url", f"{site_url}/app/{frappe.scrub(feed.doctype_name).replace('_', '-')}/{r.name}")
+		event.add("url", f"{site_url}/app/{dt_slug}/{r.name}")
 
 		if feed.field_description:
 			desc_raw = r.get(feed.field_description)
 			if desc_raw:
+				desc_str = str(desc_raw)
 				if feed.field_description_subfield:
-					desc = _resolve_subfield_value(
-						str(desc_raw), feed.field_description,
-						feed.field_description_subfield, field_link_targets
-					)
+					desc = subfield_cache.get((feed.field_description, feed.field_description_subfield), {}).get(desc_str, desc_str)
 				else:
-					desc = _html_to_text(str(desc_raw))
+					desc = _html_to_text(desc_str)
 				if desc:
 					event.add("description", desc)
 
 		if feed.field_location:
 			loc = r.get(feed.field_location)
 			if loc:
+				loc_str = str(loc)
 				if feed.field_location_subfield:
-					# User picked a specific subfield — use it as plain text, no geo
-					loc_text = _resolve_subfield_value(
-						str(loc), feed.field_location,
-						feed.field_location_subfield, field_link_targets
-					)
+					loc_text = subfield_cache.get((feed.field_location, feed.field_location_subfield), {}).get(loc_str, loc_str)
 					if loc_text:
 						event.add("location", loc_text)
-				else:
-					loc_result = _resolve_location(str(loc), feed.field_location, field_link_targets)
+				elif loc_str in address_cache:
+					loc_result = address_cache[loc_str]
 					if loc_result["text"]:
 						event.add("location", loc_result["text"])
 						if loc_result["lat"] is not None and loc_result["lng"] is not None:
 							lat, lng = loc_result["lat"], loc_result["lng"]
-							# RFC 5545 GEO property
-							from icalendar import vGeo
 							event.add("geo", vGeo((lat, lng)))
-							# Apple Maps integration
-							from icalendar import vText as _vText
 							apple_loc = _vText(f"geo:{lat},{lng}")
 							apple_loc.params["X-TITLE"] = loc_result["text"]
 							event.add("X-APPLE-STRUCTURED-LOCATION", apple_loc)
+				else:
+					# Plain text / non-Address link — just strip HTML
+					loc_text = _html_to_text(loc_str)
+					if loc_text:
+						event.add("location", loc_text)
 
 		cal.add_component(event)
 
@@ -226,7 +307,7 @@ def regenerate_token(feed_name):
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-def _html_to_text(value):
+def _html_to_text(value: str) -> str:
 	"""Convert an HTML string to plain text suitable for iCal properties.
 
 	Block-level tags are converted to newlines so structure is preserved.
@@ -235,31 +316,12 @@ def _html_to_text(value):
 	"""
 	if not value:
 		return ""
-	import re
 	try:
-		from html.parser import HTMLParser
-		class _Parser(HTMLParser):
-			BLOCK = {"p", "div", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "hr"}
-			def __init__(self):
-				super().__init__(convert_charrefs=True)
-				self.parts = []
-			def handle_starttag(self, tag, attrs):
-				if tag in self.BLOCK:
-					self.parts.append("\n")
-			def handle_endtag(self, tag):
-				if tag in self.BLOCK:
-					self.parts.append("\n")
-			def handle_data(self, data):
-				self.parts.append(data)
-		p = _Parser()
+		p = _HtmlParser()
 		p.feed(value)
-		text = "".join(p.parts)
-		# Collapse 3+ consecutive newlines to 2, strip leading/trailing whitespace per line
-		lines = [ln.rstrip() for ln in text.splitlines()]
-		text = re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
-		return text
+		lines = [ln.rstrip() for ln in "".join(p.parts).splitlines()]
+		return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip()
 	except Exception:
-		# Fallback: just strip tags
 		clean = re.sub(r"<[^>]+>", " ", value)
 		return re.sub(r"\s+", " ", clean).strip()
 
@@ -280,66 +342,3 @@ def _to_aware_datetime(val, tz):
 	except Exception:
 		pass
 	return None
-
-
-def _resolve_subfield_value(link_value, fieldname, subfield, field_link_targets):
-	"""Fetch a specific subfield from a linked record.
-
-	Returns the subfield value as a plain string, HTML-stripped.
-	Falls back to the original link_value if the lookup fails.
-	"""
-	if not link_value or not subfield:
-		return link_value or ""
-
-	linked_doctype = field_link_targets.get(fieldname, "")
-	if not linked_doctype:
-		return link_value
-
-	try:
-		val = frappe.db.get_value(linked_doctype, link_value, subfield)
-		if val is None:
-			return link_value
-		return _html_to_text(str(val)) or link_value
-	except Exception:
-		return link_value
-
-
-def _resolve_location(value, fieldname, field_link_targets):
-	"""Return a dict with 'text', 'lat', 'lng' for the iCal LOCATION property.
-
-	If the field links to an Address doctype, the record is resolved to a
-	comma-separated one-liner plus optional lat/lng from the address_map custom
-	fields (latitude, longitude).  For all other field types only 'text' is set.
-	"""
-	if not value:
-		return {"text": "", "lat": None, "lng": None}
-
-	link_target = field_link_targets.get(fieldname, "")
-
-	if link_target == "Address":
-		try:
-			addr = frappe.db.get_value(
-				"Address",
-				value,
-				["address_line1", "address_line2", "city", "state", "pincode", "country", "latitude", "longitude"],
-				as_dict=True,
-			)
-			if not addr:
-				return {"text": value, "lat": None, "lng": None}
-			parts = [
-				addr.address_line1,
-				addr.address_line2,
-				addr.city,
-				addr.state,
-				addr.pincode,
-				addr.country,
-			]
-			text = ", ".join(p.strip() for p in parts if p and str(p).strip())
-			lat = float(addr.latitude) if addr.get("latitude") else None
-			lng = float(addr.longitude) if addr.get("longitude") else None
-			return {"text": text or value, "lat": lat, "lng": lng}
-		except Exception:
-			return {"text": value, "lat": None, "lng": None}
-
-	# Convert HTML to plain text for other field types.
-	return {"text": _html_to_text(value), "lat": None, "lng": None}
