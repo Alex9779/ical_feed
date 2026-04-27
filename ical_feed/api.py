@@ -58,6 +58,7 @@ def get_feed(token):
 			"doctype_name",
 			"field_start",
 			"field_end",
+			"duration",
 			"field_summary",
 			"field_summary_subfield",
 			"field_description",
@@ -225,7 +226,8 @@ def get_feed(token):
 		end_val = r.get(feed.field_end) if feed.field_end else None
 		end_dt = _to_aware_datetime(end_val, tz) if end_val else None
 		if not end_dt or end_dt <= start_dt:
-			end_dt = start_dt + datetime.timedelta(hours=1)
+			duration_minutes = int(feed.duration or 60) or 60
+			end_dt = start_dt + datetime.timedelta(minutes=duration_minutes)
 
 		summary_field = feed.field_summary or "name"
 		raw_summary = str(r.get(summary_field) or r.get("name") or "")

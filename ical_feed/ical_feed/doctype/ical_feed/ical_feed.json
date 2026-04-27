@@ -13,6 +13,7 @@
   "section_datetime",
   "field_start",
   "field_end",
+  "duration",
   "column_break_b",
   "field_summary",
   "field_summary_subfield",
@@ -78,8 +79,15 @@
    "fieldname": "field_end",
    "fieldtype": "Select",
    "label": "End Field",
-   "options": "",
-   "reqd": 1
+   "options": ""
+  },
+  {
+   "default": "60",
+   "depends_on": "eval:!doc.field_end",
+   "description": "Fallback event duration in minutes when no End Field is set.",
+   "fieldname": "duration",
+   "fieldtype": "Int",
+   "label": "Default Duration (minutes)"
   },
   {
    "fieldname": "column_break_b",

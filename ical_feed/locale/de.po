@@ -35,6 +35,9 @@ msgstr "Startfeld"
 msgid "End Field"
 msgstr "Endfeld"
 
+msgid "Default Duration (minutes)"
+msgstr "Standarddauer (Minuten)"
+
 msgid "Summary Field"
 msgstr "Zusammenfassungsfeld"
 
@@ -64,6 +67,9 @@ msgstr "Datums-/Zeitfeld für den Ereignisstart"
 
 msgid "Datetime field for event end"
 msgstr "Datums-/Zeitfeld für das Ereignisende"
+
+msgid "Fallback event duration in minutes when no End Field is set."
+msgstr "Ausweichdauer in Minuten, wenn kein Endfeld gesetzt ist."
 
 msgid "Field used as event title in calendar (SUMMARY). Uses document name if empty."
 msgstr "Feld, das als Ereignistitel im Kalender verwendet wird (SUMMARY). Verwendet den Dokumentnamen, wenn leer."
