@@ -83,8 +83,7 @@
   },
   {
    "default": "60",
-   "depends_on": "eval:!doc.field_end",
-   "description": "Fallback event duration in minutes when no End Field is set.",
+   "description": "Fallback event duration in minutes when no End Field is set or the end field is empty.",
    "fieldname": "duration",
    "fieldtype": "Int",
    "label": "Default Duration (minutes)"
