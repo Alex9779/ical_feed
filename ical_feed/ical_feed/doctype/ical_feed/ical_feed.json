@@ -1,9 +1,10 @@
 {
  "actions": [],
- "autoname": "ICAL-FEED-.####",
+ "autoname": "hash",
  "creation": "2026-04-18 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
+ "title_field": "title",
  "field_order": [
   "title",
   "enabled",
