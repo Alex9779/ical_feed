@@ -65,7 +65,6 @@ def get_feed(token):
 			"field_description_subfield",
 			"field_location",
 			"field_location_subfield",
-			"address_type_priority",
 			"filters_json",
 		],
 		as_dict=True,
@@ -176,10 +175,6 @@ def get_feed(token):
 		except Exception:
 			subfield_cache[(_pf, _sf)] = {}
 
-	# Parse address type priority once
-	_priority_raw = str(feed.address_type_priority or "").strip()
-	_address_type_priority = [t.strip() for t in _priority_raw.split(",") if t.strip()] if _priority_raw else []
-
 	# --- Pre-build Address location cache ------------------------------------
 	# Batch-fetch all Address records referenced by the location field so the
 	# event loop does a dict lookup instead of a DB query per record.
@@ -202,52 +197,6 @@ def get_feed(token):
 							"text": _text or str(_addr.name),
 							"lat": float(_addr.latitude) if _addr.get("latitude") else None,
 							"lng": float(_addr.longitude) if _addr.get("longitude") else None,
-						}
-				except Exception:
-					pass
-
-	# --- Pre-build linked-address cache --------------------------------------
-	# When field_location links to a non-Address doctype (e.g. Customer),
-	# look up addresses via Dynamic Link and pick the best per link_name.
-	linked_address_cache: dict[str, dict] = {}
-	if feed.field_location and not feed.field_location_subfield:
-		_loc_target = field_link_targets.get(feed.field_location, "")
-		if _loc_target and _loc_target != "Address":
-			_loc_keys = list({str(r.get(feed.field_location) or "") for r in records if r.get(feed.field_location)})
-			if _loc_keys:
-				try:
-					_linked_rows = frappe.db.sql(
-						"""
-						SELECT
-							dl.link_name,
-							addr.name AS address_name,
-							addr.address_line1,
-							addr.address_line2,
-							addr.city,
-							addr.state,
-							addr.pincode,
-							addr.country,
-							addr.latitude,
-							addr.longitude,
-							addr.address_type
-						FROM `tabAddress` addr
-						JOIN `tabDynamic Link` dl
-							ON dl.parent = addr.name
-							AND dl.parenttype = 'Address'
-							AND dl.link_doctype = %(loc_target)s
-							AND dl.link_name IN %(loc_keys)s
-						""",
-						{"loc_target": _loc_target, "loc_keys": _loc_keys},
-						as_dict=True,
-					)
-					_picked = _pick_best_address(list(_linked_rows), _address_type_priority)
-					for _row in _picked:
-						_parts = [_row.address_line1, _row.address_line2, _row.city, _row.state, _row.pincode, _row.country]
-						_text = ", ".join(p.strip() for p in _parts if p and str(p).strip())
-						linked_address_cache[str(_row.link_name)] = {
-							"text": _text or str(_row.address_name),
-							"lat": float(_row.latitude) if _row.get("latitude") else None,
-							"lng": float(_row.longitude) if _row.get("longitude") else None,
 						}
 				except Exception:
 					pass
@@ -323,21 +272,11 @@ def get_feed(token):
 							apple_loc = _vText(f"geo:{lat},{lng}")
 							apple_loc.params["X-TITLE"] = loc_result["text"]
 							event.add("X-APPLE-STRUCTURED-LOCATION", apple_loc)
-				elif loc_str in linked_address_cache:
-					_la = linked_address_cache[loc_str]
-					if _la["text"]:
-						event.add("location", _la["text"])
-						if _la["lat"] is not None and _la["lng"] is not None:
-							lat, lng = _la["lat"], _la["lng"]
-							event.add("geo", vGeo((lat, lng)))
-							apple_loc = _vText(f"geo:{lat},{lng}")
-							apple_loc.params["X-TITLE"] = _la["text"]
-							event.add("X-APPLE-STRUCTURED-LOCATION", apple_loc)
-					else:
-						# Plain text / non-Address link — just strip HTML
-						loc_text = _html_to_text(loc_str)
-						if loc_text:
-							event.add("location", loc_text)
+				else:
+					# Plain text / non-Address link — just strip HTML
+					loc_text = _html_to_text(loc_str)
+					if loc_text:
+						event.add("location", loc_text)
 
 		cal.add_component(event)
 
@@ -348,44 +287,6 @@ def get_feed(token):
 	frappe.response["filecontent"] = ics_bytes
 	frappe.response["content_type"] = "text/calendar; charset=utf-8"
 	frappe.response["display_content_as"] = "inline"
-
-
-# ---------------------------------------------------------------------------
-# Address priority helpers
-# ---------------------------------------------------------------------------
-
-_DEFAULT_ADDRESS_TYPE_PRIORITY: tuple[str, ...] = (
-	"Billing", "Shipping", "Office", "Personal", "Plant", "Postal",
-	"Shop", "Subsidiary", "Warehouse", "Current", "Permanent", "Other",
-)
-
-
-def _pick_best_address(rows: list, priority: list[str] | None) -> list:
-	"""Keep only one address per link_name according to the priority list."""
-	user_list: list[str] = priority or []
-	user_set = set(user_list)
-	effective: list[str] = list(user_list) + [t for t in _DEFAULT_ADDRESS_TYPE_PRIORITY if t not in user_set]
-	priority_index: dict[str, int] = {t: i for i, t in enumerate(effective)}
-	best: dict[str, object] = {}
-	for row in rows:
-		name = str(row.get("link_name") or "")
-		addr_type = str(row.get("address_type") or "")
-		rank = priority_index.get(addr_type)
-		if rank is None:
-			if name not in best:
-				best[name] = row
-			continue
-		current_rank = priority_index.get(str((best[name].get("address_type") or "") if name in best else ""), len(effective)) if name in best else len(effective)
-		if rank < current_rank:
-			best[name] = row
-	seen: set[str] = set()
-	result = []
-	for row in rows:
-		name = str(row.get("link_name") or "")
-		if name not in seen and best.get(name) is row:
-			seen.add(name)
-			result.append(row)
-	return result
 
 
 # ---------------------------------------------------------------------------
