@@ -7,8 +7,7 @@ from frappe.model.document import Document
 
 class iCalFeed(Document):
 	def before_insert(self):
-		if not self.token:
-			self.token = frappe.generate_hash(length=32)
+		self.token = frappe.generate_hash(length=32)
 
 	def validate(self):
 		if not self.token:
