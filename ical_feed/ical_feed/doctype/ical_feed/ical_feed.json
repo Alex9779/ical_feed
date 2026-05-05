@@ -24,6 +24,7 @@
   "column_break_c",
   "field_location",
   "field_location_subfield",
+  "address_type_priority",
   "section_filters",
   "filters_json"
  ],
@@ -146,6 +147,12 @@
    "hidden": 1,
    "label": "Location \u2192 Linked Field",
    "options": ""
+  },
+  {
+   "description": "Comma-separated address types in priority order (e.g. <code>Billing, Shipping</code>). Listed types are preferred first; any remaining types follow in the default Frappe order. Leave blank to use only the default order.",
+   "fieldname": "address_type_priority",
+   "fieldtype": "Data",
+   "label": "Address Type Priority"
   },
   {
    "fieldname": "section_filters",
