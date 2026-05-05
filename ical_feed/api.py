@@ -251,6 +251,13 @@ def get_feed(token):
 						}
 				except Exception:
 					pass
+
+	cal = Calendar()
+	cal.add("prodid", f"-//Frappe iCal Feed//{feed.doctype_name}//EN")
+	cal.add("version", "2.0")
+	cal.add("calscale", "GREGORIAN")
+	cal.add("method", "PUBLISH")
+	cal.add("X-WR-CALNAME", feed.title or feed.doctype_name)
 	cal.add("X-WR-TIMEZONE", system_tz_name)
 	cal.add("X-WR-CALDESC", f"Frappe {feed.doctype_name}")
 	cal.add("REFRESH-INTERVAL;VALUE=DURATION", "PT1H")
